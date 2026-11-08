@@ -20,7 +20,13 @@ const tint = (name: string) => {
   return TINTS[h];
 };
 
-const todayStr = () => new Date().toISOString().slice(0, 10);
+// Uses your local date (not UTC) so "today" is correct in the evening too
+const todayStr = () => {
+  const n = new Date();
+  const m = String(n.getMonth() + 1).padStart(2, "0");
+  const d = String(n.getDate()).padStart(2, "0");
+  return `${n.getFullYear()}-${m}-${d}`;
+};
 const daysUntil = (d: string) =>
   Math.round((new Date(d).getTime() - new Date(todayStr()).getTime()) / 86400000);
 const domain = (u: string) => {
@@ -108,21 +114,22 @@ export default function Home() {
   const inView = links.filter((l) => {
     if (view === "closed") return l.status === "done";
     if (l.status !== "todo") return false;
+    // "Due soon" tab shows overdue items too, since they are the most urgent
     if (view === "soon") return !!l.due_date && daysUntil(l.due_date) <= 7;
     return true;
   });
   const visible = inView.filter((l) => filter === "all" || l.category === filter);
 
-  const heading = { open: "Open links", soon: "Due soon", closed: "Closed links" }[view];
+  const heading = { open: "Open links", soon: "Due soon & overdue", closed: "Closed links" }[view];
   const empty = {
     open: "Nothing open. Add a link when something comes up.",
-    soon: "Nothing due in the next 7 days.",
+    soon: "Nothing overdue or due in the next 7 days.",
     closed: "Nothing closed yet.",
   }[view];
 
   const tabs: { id: View; label: string; count?: number }[] = [
     { id: "open", label: "Open", count: open.length },
-    { id: "soon", label: "Due soon" },
+    { id: "soon", label: "Due & overdue" },
     { id: "closed", label: "Closed" },
   ];
 
