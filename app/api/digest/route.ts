@@ -6,8 +6,8 @@ const today = () => new Date().toLocaleDateString("en-CA", { timeZone: TZ });
 const daysUntil = (d: string) =>
   Math.round((new Date(d).getTime() - new Date(today()).getTime()) / 86400000);
 
-const esc = (s: string) =>
-  s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+const esc = (s: string | null | undefined) =>
+  (s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
 function row(l: Link, label: string, color: string) {
   return `<tr>
