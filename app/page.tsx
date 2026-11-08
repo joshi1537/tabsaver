@@ -42,7 +42,7 @@ function dueChip(due: string | null) {
   return { text: `Due ${due}`, style: "bg-white/5 text-white/50 border-white/10" };
 }
 
-type View = "open" | "soon" | "closed";
+type View = "open" | "overdue" | "soon" | "closed";
 
 const Icon = ({ d, className = "h-5 w-5" }: { d: string; className?: string }) => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className}>
@@ -114,22 +114,24 @@ export default function Home() {
   const inView = links.filter((l) => {
     if (view === "closed") return l.status === "done";
     if (l.status !== "todo") return false;
-    // "Due soon" tab shows overdue items too, since they are the most urgent
-    if (view === "soon") return !!l.due_date && daysUntil(l.due_date) <= 7;
+    if (view === "overdue") return !!l.due_date && daysUntil(l.due_date) < 0;
+    if (view === "soon") return !!l.due_date && daysUntil(l.due_date) >= 0 && daysUntil(l.due_date) <= 7;
     return true;
   });
   const visible = inView.filter((l) => filter === "all" || l.category === filter);
 
-  const heading = { open: "Open links", soon: "Due soon & overdue", closed: "Closed links" }[view];
+  const heading = { open: "Open links", overdue: "Overdue", soon: "Due soon", closed: "Closed links" }[view];
   const empty = {
     open: "Nothing open. Add a link when something comes up.",
-    soon: "Nothing overdue or due in the next 7 days.",
+    overdue: "Nothing overdue. Nice work.",
+    soon: "Nothing due in the next 7 days.",
     closed: "Nothing closed yet.",
   }[view];
 
   const tabs: { id: View; label: string; count?: number }[] = [
     { id: "open", label: "Open", count: open.length },
-    { id: "soon", label: "Due & overdue" },
+    { id: "overdue", label: "Overdue", count: overdue.length },
+    { id: "soon", label: "Due soon" },
     { id: "closed", label: "Closed" },
   ];
 
